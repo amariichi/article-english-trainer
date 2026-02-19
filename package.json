@@ -1,0 +1,52 @@
+{
+  "name": "english-trainer",
+  "version": "0.3.2",
+  "private": true,
+  "license": "MIT",
+  "description": "Article-based English conversation trainer",
+  "type": "module",
+  "scripts": {
+    "setup": "bash scripts/setup.sh",
+    "setup:ci": "bash scripts/setup.sh --ci",
+    "setup:doctor": "bash scripts/doctor.sh",
+    "dev": "tsx src/server.ts",
+    "dev:all": "tsx scripts/dev-all.ts",
+    "dev:watch": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/src/server.js",
+    "lint": "eslint \"src/**/*.ts\" \"scripts/**/*.ts\" \"tests/**/*.ts\" --max-warnings=0",
+    "lint:fix": "npm run lint -- --fix",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "article:auth": "tsx scripts/article-auth.ts",
+    "nemotron:serve": "tsx scripts/nemotron-serve.ts",
+    "nemotron:preflight": "tsx scripts/nemotron-preflight.ts",
+    "asr-worker:start": "tsx scripts/asr-worker-start.ts",
+    "asr-worker:smoke": "uv run --project asr-worker asr-worker --smoke",
+    "tts-worker:start": "tsx scripts/tts-worker-start.ts",
+    "tts-worker:smoke": "uv run --project tts-worker tts-worker --smoke"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "execa": "^9.6.0",
+    "express": "^4.21.2",
+    "openai": "^5.15.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.23",
+    "@types/node": "^20.19.12",
+    "@types/supertest": "^6.0.3",
+    "@typescript-eslint/eslint-plugin": "^8.55.0",
+    "@typescript-eslint/parser": "^8.55.0",
+    "eslint": "^9.39.2",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "supertest": "^7.1.4",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}

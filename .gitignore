@@ -1,0 +1,51 @@
+node_modules/
+dist/
+.env
+.env.local
+coverage/
+.local/
+.agent/
+ExecPlan.md
+*.log
+
+# OS / editor artifacts
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Python virtualenv and caches
+.venv/
+.venv-*/
+asr-worker/.venv/
+tts-worker/.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+asr-worker/.pytest_cache/
+tts-worker/.pytest_cache/
+asr-worker/__pycache__/
+tts-worker/__pycache__/
+asr-worker/src/**/__pycache__/
+tts-worker/src/**/__pycache__/
+
+# Build / reports
+*.tsbuildinfo
+*.tmp
+*.temp
+tmp/
+.eslintcache
+
+# Local model artifacts (large files)
+models/*.gguf
+models/*.bin
+models/*.safetensors
+models/*.pt
+models/*.pth
+assets/kokoro/kokoro-v1.0.onnx
+assets/kokoro/voices-v1.0.bin

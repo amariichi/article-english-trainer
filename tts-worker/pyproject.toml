@@ -1,0 +1,29 @@
+[project]
+name = "english-trainer-tts-worker"
+version = "0.1.0"
+description = "Local TTS worker for english-trainer (Kokoro ONNX + Misaki)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.116.0",
+  "uvicorn[standard]>=0.35.0",
+  "pydantic>=2.11.0",
+  "numpy>=2.0.0",
+  "soundfile>=0.13.0",
+  "kokoro-onnx>=0.4.5",
+  "misaki>=0.9.4",
+  "pyopenjtalk>=0.4.1",
+  "fugashi>=1.3.2",
+  "jaconv>=0.4.0",
+  "mojimoji>=0.0.13",
+]
+
+[project.scripts]
+tts-worker = "tts_worker.__main__:main"
+
+[build-system]
+requires = ["hatchling>=1.24.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tts_worker"]

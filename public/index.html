@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>English Trainer - Article Mode</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Manrope:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="page-header">
+        <p class="eyebrow">Article Conversation Studio</p>
+        <h1>Read, Debate, and Shadow in English</h1>
+        <p class="intro">
+          任意の記事を読み、要約から英会話を始めます。分からない表現は日本語で聞けます。
+        </p>
+      </header>
+
+      <main class="layout-grid">
+        <section class="panel panel-source" aria-labelledby="article-panel-title">
+          <h2 id="article-panel-title">1. Import Article</h2>
+
+          <div class="field-row provider-row">
+            <label for="provider-select">LLM Provider</label>
+            <select id="provider-select" name="provider">
+              <option value="nemotron">nemotron</option>
+              <option value="gemini">gemini</option>
+            </select>
+          </div>
+
+          <form id="article-form" class="stack-form">
+            <label for="article-url">Article URL</label>
+            <input
+              id="article-url"
+              name="url"
+              type="url"
+              placeholder="https://example.com/article"
+              required
+            />
+            <button id="fetch-button" type="submit">Fetch &amp; Summarize</button>
+            <p id="article-error" class="inline-error" role="alert" aria-live="polite"></p>
+          </form>
+
+          <section id="manual-fallback" class="manual-fallback" hidden>
+            <h3>Fallback: Paste Article Text</h3>
+            <p>
+              自動取得に失敗した場合は、本文を貼り付けて同じ練習フローを続行できます。
+            </p>
+            <label for="manual-title">Article Title (optional)</label>
+            <input id="manual-title" type="text" placeholder="Title" />
+            <label for="manual-text">Article Text</label>
+            <textarea id="manual-text" rows="10" placeholder="Paste article text here"></textarea>
+            <button id="manual-submit" type="button">Use Manual Text</button>
+          </section>
+
+          <section id="summary-panel" class="summary-panel" hidden>
+            <h3 id="summary-title"></h3>
+            <p id="summary-short"></p>
+            <ul id="summary-bullets"></ul>
+            <p id="summary-starter" class="starter"></p>
+          </section>
+        </section>
+
+        <section class="panel panel-practice" aria-labelledby="practice-title">
+          <h2 id="practice-title">2. Practice Conversation</h2>
+
+          <div id="chat-log" class="chat-log" aria-live="polite"></div>
+
+          <form id="chat-form" class="stack-form">
+            <label for="chat-message">Your Message</label>
+            <textarea
+              id="chat-message"
+              rows="4"
+              placeholder="Share your opinion in English. 日本語で質問してもOK"
+              required
+            ></textarea>
+
+            <button id="send-button" type="submit">Send</button>
+            <p id="chat-error" class="inline-error" role="alert" aria-live="polite"></p>
+          </form>
+
+          <div class="audio-turn" id="audio-turn-panel">
+            <h3>Audio Turn (ASR/TTS)</h3>
+            <p class="audio-help">
+              PTT（押している間録音）で、ASR → 会話応答 → TTS 再生を行います。
+            </p>
+            <div class="ptt-controls">
+              <button id="ptt-button-en" class="button-secondary" type="button">
+                Hold to Talk (EN)
+              </button>
+              <button id="ptt-button-ja" class="button-secondary" type="button">
+                Hold to Talk (JA)
+              </button>
+            </div>
+            <p id="mic-status" class="audio-help">
+              キーボード操作: Ctrl 長押し=EN、Alt 長押し=JA。
+            </p>
+            <p id="audio-error" class="inline-error" role="alert" aria-live="polite"></p>
+          </div>
+        </section>
+      </main>
+
+      <section class="panel panel-shadowing" aria-labelledby="shadowing-title">
+        <h2 id="shadowing-title">3. Shadowing</h2>
+        <p class="audio-help">生成時にシャドーイング文を自動でTTS再生します。</p>
+        <div class="field-row">
+          <label for="shadowing-difficulty">Difficulty</label>
+          <select id="shadowing-difficulty">
+            <option value="easy">easy</option>
+            <option value="normal" selected>normal</option>
+            <option value="hard">hard</option>
+          </select>
+          <button id="shadowing-button" type="button">Generate Shadowing Script</button>
+        </div>
+        <p id="shadowing-error" class="inline-error" role="alert" aria-live="polite"></p>
+        <ol id="shadowing-lines" class="shadowing-lines"></ol>
+        <p id="shadowing-focus" class="focus-words"></p>
+      </section>
+
+      <footer class="status-strip">
+        <p id="status-text">Ready</p>
+      </footer>
+    </div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
