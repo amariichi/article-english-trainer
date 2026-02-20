@@ -7,6 +7,7 @@ describe("loadEnv", () => {
     const env = loadEnv({});
     expect(env.LLM_PROVIDER).toBe("nemotron");
     expect(env.ALLOW_PROVIDER_OVERRIDE).toBe(false);
+    expect(env.HOST).toBe("127.0.0.1");
     expect(env.PORT).toBe(3000);
     expect(env.ARTICLE_REACHABILITY_TIMEOUT_MS).toBe(3000);
     expect(env.AGENT_BROWSER_COMMAND_TIMEOUT_MS).toBe(10000);

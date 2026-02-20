@@ -13,6 +13,7 @@ const state = {
   keyboardPttKey: null,
   activeRecordingHint: null,
   lastPlaybackAudio: null,
+  pendingPlaybackSrc: null,
   micMaxRecordingMs: 20000
 };
 
@@ -41,6 +42,7 @@ const elements = {
   pttButtonEn: document.getElementById("ptt-button-en"),
   pttButtonJa: document.getElementById("ptt-button-ja"),
   micStatus: document.getElementById("mic-status"),
+  audioRetryButton: document.getElementById("audio-retry-button"),
   shadowingDifficulty: document.getElementById("shadowing-difficulty"),
   shadowingButton: document.getElementById("shadowing-button"),
   shadowingError: document.getElementById("shadowing-error"),
@@ -78,6 +80,24 @@ async function bootstrap() {
 }
 
 function wireEvents() {
+  elements.audioRetryButton.addEventListener("click", async () => {
+    if (!state.pendingPlaybackSrc) {
+      return;
+    }
+
+    setBusy(elements.audioRetryButton, true);
+    try {
+      await playPendingAudio();
+      elements.audioError.textContent = "";
+      setStatus("Audio playback resumed.");
+    } catch (error) {
+      elements.audioError.textContent = `音声の再生に失敗しました: ${describePlaybackError(error)}`;
+      setStatus("Manual audio playback failed.");
+    } finally {
+      setBusy(elements.audioRetryButton, false);
+    }
+  });
+
   elements.articleForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     elements.articleError.textContent = "";
@@ -412,6 +432,11 @@ async function stopMicRecordingAndSend() {
   } catch (error) {
     elements.audioError.textContent = `録音処理に失敗しました: ${error.message}`;
     setStatus("Audio recording failed.");
+  } finally {
+    // Keeping mic capture active can lower playback route/volume on some mobile browsers (iOS Safari).
+    // Re-open capture on next PTT press to keep output volume behavior more consistent.
+    releaseMicCapture();
+    updateMicUi();
   }
 }
 
@@ -476,7 +501,7 @@ function stopRecorder(recorder, chunks) {
   });
 }
 
-function releaseMicrophone() {
+function releaseMicCapture() {
   if (state.mediaRecorder && state.mediaRecorder.state !== "inactive") {
     try {
       state.mediaRecorder.stop();
@@ -499,6 +524,10 @@ function releaseMicrophone() {
   state.isRecording = false;
   state.keyboardPttKey = null;
   state.activeRecordingHint = null;
+}
+
+function releaseMicrophone() {
+  releaseMicCapture();
 
   if (state.lastPlaybackAudio) {
     try {
@@ -508,6 +537,8 @@ function releaseMicrophone() {
     }
     state.lastPlaybackAudio = null;
   }
+
+  clearPendingPlayback();
 }
 
 async function sendAudioBlob(blob, mimeType, languageHint) {
@@ -554,27 +585,19 @@ function buildAudioUploadUrl(mimeType, languageHint) {
 
 async function handleSpeechResult(speech, ttsError, fallbackText, context) {
   const messages = [];
+  clearPendingPlayback();
+
   if (ttsError) {
     messages.push(`TTS warning: ${ttsError}`);
   }
 
   if (speech?.audioBase64) {
-    if (state.lastPlaybackAudio) {
-      try {
-        state.lastPlaybackAudio.pause();
-      } catch {
-        // Ignore stale player cleanup failures.
-      }
-      state.lastPlaybackAudio = null;
-    }
     const src = `data:${speech.mimeType || "audio/wav"};base64,${speech.audioBase64}`;
-    const player = new Audio(src);
-    player.preload = "auto";
-    state.lastPlaybackAudio = player;
     try {
-      await player.play();
-    } catch {
-      messages.push("音声を自動再生できませんでした。");
+      await playAudioSource(src);
+    } catch (error) {
+      queuePendingPlayback(src);
+      messages.push(`音声を自動再生できませんでした。${describePlaybackError(error)}`);
     }
   } else if (speech?.backend === "minimum_headroom_face_say") {
     const reason = speech.dispatchResult?.reason;
@@ -594,6 +617,61 @@ async function handleSpeechResult(speech, ttsError, fallbackText, context) {
   if (messages.length === 0 && !speech && !ttsError && fallbackText) {
     elements.audioError.textContent = "TTS response is empty.";
   }
+}
+
+function queuePendingPlayback(src) {
+  state.pendingPlaybackSrc = src;
+  elements.audioRetryButton.hidden = false;
+  elements.audioRetryButton.disabled = false;
+}
+
+function clearPendingPlayback() {
+  state.pendingPlaybackSrc = null;
+  elements.audioRetryButton.hidden = true;
+  elements.audioRetryButton.disabled = false;
+}
+
+async function playPendingAudio() {
+  if (!state.pendingPlaybackSrc) {
+    throw new Error("No pending audio to play.");
+  }
+  const src = state.pendingPlaybackSrc;
+  await playAudioSource(src);
+  clearPendingPlayback();
+}
+
+async function playAudioSource(src) {
+  if (state.lastPlaybackAudio) {
+    try {
+      state.lastPlaybackAudio.pause();
+    } catch {
+      // Ignore stale player cleanup failures.
+    }
+    state.lastPlaybackAudio = null;
+  }
+
+  const player = new Audio(src);
+  player.preload = "auto";
+  player.playsInline = true;
+  state.lastPlaybackAudio = player;
+  await player.play();
+}
+
+function describePlaybackError(error) {
+  if (error instanceof DOMException) {
+    if (error.name === "NotAllowedError") {
+      return "ブラウザの自動再生制限です。再生ボタンを押してください。";
+    }
+    if (error.name === "NotSupportedError") {
+      return "音声データをデコードできませんでした。";
+    }
+    return error.message ? `${error.name}: ${error.message}` : error.name;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
 }
 
 async function applySession(result) {

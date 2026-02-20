@@ -162,7 +162,9 @@ npm run dev:all
 - 初回 `npm run dev:all` は `asr-worker` 側で `torch` / `nemo-toolkit` の取得・初期化に時間がかかる場合があります。
 - `asr-worker:start` は `.env` を読み込み、`ASR_ENABLE_CUDA_FALLBACK=true` 時に CUDA 不安定時の自動フォールバックを行います。
 
-アクセス先: `http://localhost:3000`
+アクセス先（既定）: `http://127.0.0.1:3000`
+
+- LAN 公開が必要な場合のみ `.env` で `HOST=0.0.0.0` を設定してください。
 
 別ターミナルで分ける場合:
 
