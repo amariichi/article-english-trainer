@@ -134,7 +134,7 @@ describe("app integration", () => {
     const response = await request(app).get("/api/config");
     expect(response.status).toBe(200);
     expect(response.body.availableProviders).toEqual(["nemotron", "gemini"]);
-    expect(response.body.micMaxRecordingMs).toBe(20000);
+    expect(response.body.micMaxRecordingMs).toBe(35000);
   });
 
   it("runs manual article flow and session endpoints", async () => {

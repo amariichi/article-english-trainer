@@ -12,9 +12,26 @@ const state = {
   pttPointerArmed: false,
   keyboardPttKey: null,
   activeRecordingHint: null,
+  playbackAudio: null,
+  audioUnlockEventsBound: false,
+  audioUnlockInFlight: null,
+  audioUnlocked: false,
+  micPermissionPrimed: false,
+  micPermissionPrefetchAttempted: false,
+  micPermissionPrefetchInFlight: null,
   lastPlaybackAudio: null,
   pendingPlaybackSrc: null,
-  micMaxRecordingMs: 20000
+  micMaxRecordingMs: 35000
+};
+
+const SILENT_AUDIO_DATA_URL =
+  "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
+const AUDIO_UNLOCK_EVENTS = ["pointerdown", "touchstart", "click", "keydown"];
+const AUDIO_UNLOCK_TIMEOUT_MS = 1200;
+const MIC_AUDIO_CONSTRAINTS = {
+  echoCancellation: true,
+  noiseSuppression: true,
+  autoGainControl: true
 };
 
 const elements = {
@@ -64,7 +81,7 @@ async function bootstrap() {
   state.micMaxRecordingMs =
     typeof config.micMaxRecordingMs === "number" && Number.isFinite(config.micMaxRecordingMs)
       ? Math.max(1, Math.trunc(config.micMaxRecordingMs))
-      : 20000;
+      : 35000;
 
   elements.providerSelect.value = config.defaultProvider;
   if (!config.allowProviderOverride) {
@@ -80,6 +97,11 @@ async function bootstrap() {
 }
 
 function wireEvents() {
+  if (state.ttsEnabled) {
+    ensurePlaybackAudioElement();
+    registerGlobalAudioUnlock();
+  }
+
   elements.audioRetryButton.addEventListener("click", async () => {
     if (!state.pendingPlaybackSrc) {
       return;
@@ -87,6 +109,7 @@ function wireEvents() {
 
     setBusy(elements.audioRetryButton, true);
     try {
+      await unlockPlaybackAudio();
       await playPendingAudio();
       elements.audioError.textContent = "";
       setStatus("Audio playback resumed.");
@@ -108,6 +131,8 @@ function wireEvents() {
       return;
     }
 
+    void unlockPlaybackAudio();
+    primeMicrophonePermissionPrefetch();
     setBusy(elements.fetchButton, true);
     setStatus("Fetching article and generating summary...");
 
@@ -143,6 +168,8 @@ function wireEvents() {
       return;
     }
 
+    void unlockPlaybackAudio();
+    primeMicrophonePermissionPrefetch();
     setBusy(elements.manualSubmit, true);
     setStatus("Summarizing pasted article text...");
 
@@ -182,6 +209,7 @@ function wireEvents() {
       return;
     }
 
+    void unlockPlaybackAudio();
     const mode = shouldUseJapaneseMode(message) ? "help_ja" : "discussion";
 
     addChatItem("user", message, mode, null);
@@ -222,6 +250,7 @@ function wireEvents() {
       return;
     }
 
+    void unlockPlaybackAudio();
     setBusy(elements.shadowingButton, true);
     setStatus("Generating shadowing lines...");
 
@@ -288,6 +317,7 @@ function registerPttButton(button, source, languageHint) {
       return;
     }
     event.preventDefault();
+    void unlockPlaybackAudio();
     state.pttPointerArmed = true;
     await startMicRecording(source, languageHint);
   });
@@ -322,6 +352,7 @@ async function onGlobalKeyDown(event) {
   if (event.key === "Control" && !event.altKey) {
     event.preventDefault();
     state.keyboardPttKey = "Control";
+    void unlockPlaybackAudio();
     await startMicRecording("ctrl", "en");
     return;
   }
@@ -329,6 +360,7 @@ async function onGlobalKeyDown(event) {
   if (event.key === "Alt" && !event.ctrlKey) {
     event.preventDefault();
     state.keyboardPttKey = "Alt";
+    void unlockPlaybackAudio();
     await startMicRecording("alt", "ja");
   }
 }
@@ -445,13 +477,8 @@ async function ensureMediaRecorder() {
     return state.mediaRecorder;
   }
 
-  const stream = await navigator.mediaDevices.getUserMedia({
-    audio: {
-      echoCancellation: true,
-      noiseSuppression: true,
-      autoGainControl: true
-    }
-  });
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: MIC_AUDIO_CONSTRAINTS });
+  state.micPermissionPrimed = true;
 
   const preferredTypes = [
     "audio/webm;codecs=opus",
@@ -472,6 +499,34 @@ async function ensureMediaRecorder() {
   state.micStream = stream;
   state.mediaRecorder = recorder;
   return recorder;
+}
+
+function primeMicrophonePermissionPrefetch() {
+  if (!state.audioTurnEnabled) {
+    return;
+  }
+  if (!navigator.mediaDevices?.getUserMedia) {
+    return;
+  }
+  if (state.isRecording || state.micPermissionPrimed || state.micPermissionPrefetchAttempted) {
+    return;
+  }
+  if (state.micPermissionPrefetchInFlight) {
+    return;
+  }
+
+  state.micPermissionPrefetchAttempted = true;
+  state.micPermissionPrefetchInFlight = (async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: MIC_AUDIO_CONSTRAINTS });
+      stream.getTracks().forEach((track) => track.stop());
+      state.micPermissionPrimed = true;
+    } catch {
+      // Ignore here. If permission is denied, normal PTT flow shows the concrete error.
+    } finally {
+      state.micPermissionPrefetchInFlight = null;
+    }
+  })();
 }
 
 function stopRecorder(recorder, chunks) {
@@ -641,20 +696,117 @@ async function playPendingAudio() {
 }
 
 async function playAudioSource(src) {
-  if (state.lastPlaybackAudio) {
-    try {
-      state.lastPlaybackAudio.pause();
-    } catch {
-      // Ignore stale player cleanup failures.
-    }
-    state.lastPlaybackAudio = null;
+  await unlockPlaybackAudio();
+  const player = ensurePlaybackAudioElement();
+  try {
+    player.pause();
+  } catch {
+    // Ignore stale player cleanup failures.
   }
-
-  const player = new Audio(src);
-  player.preload = "auto";
-  player.playsInline = true;
+  player.src = src;
+  player.currentTime = 0;
   state.lastPlaybackAudio = player;
   await player.play();
+  state.audioUnlocked = true;
+}
+
+function ensurePlaybackAudioElement() {
+  if (state.playbackAudio) {
+    return state.playbackAudio;
+  }
+
+  const player = new Audio();
+  player.preload = "auto";
+  player.playsInline = true;
+  player.setAttribute("playsinline", "");
+  state.playbackAudio = player;
+  return player;
+}
+
+function registerGlobalAudioUnlock() {
+  if (!state.ttsEnabled || state.audioUnlockEventsBound) {
+    return;
+  }
+
+  state.audioUnlockEventsBound = true;
+  for (const eventName of AUDIO_UNLOCK_EVENTS) {
+    document.addEventListener(eventName, onGlobalAudioUnlockGesture, {
+      capture: true,
+      passive: eventName === "touchstart"
+    });
+  }
+}
+
+function unregisterGlobalAudioUnlock() {
+  if (!state.audioUnlockEventsBound) {
+    return;
+  }
+
+  for (const eventName of AUDIO_UNLOCK_EVENTS) {
+    document.removeEventListener(eventName, onGlobalAudioUnlockGesture, true);
+  }
+  state.audioUnlockEventsBound = false;
+}
+
+function onGlobalAudioUnlockGesture() {
+  void unlockPlaybackAudio();
+}
+
+async function unlockPlaybackAudio() {
+  if (!state.ttsEnabled || state.audioUnlocked) {
+    return;
+  }
+  if (state.audioUnlockInFlight) {
+    await state.audioUnlockInFlight;
+    return;
+  }
+
+  const player = ensurePlaybackAudioElement();
+  state.audioUnlockInFlight = (async () => {
+    try {
+      // iOS autoplay unlock is more reliable when media is played from a user gesture
+      // without using the muted flag.
+      player.muted = false;
+      player.src = SILENT_AUDIO_DATA_URL;
+      player.currentTime = 0;
+      const playPromise = player.play();
+      if (playPromise && typeof playPromise.then === "function") {
+        await withTimeout(playPromise, AUDIO_UNLOCK_TIMEOUT_MS);
+      }
+      player.pause();
+      player.currentTime = 0;
+      player.src = "";
+      state.audioUnlocked = true;
+      unregisterGlobalAudioUnlock();
+    } catch {
+      // Keep listeners active and retry on the next user gesture.
+    } finally {
+      state.audioUnlockInFlight = null;
+    }
+  })();
+
+  await state.audioUnlockInFlight;
+}
+
+function withTimeout(promise, timeoutMs) {
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
+    return promise;
+  }
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      }
+    );
+  });
 }
 
 function describePlaybackError(error) {
