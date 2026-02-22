@@ -93,7 +93,7 @@
    - `agent-browser` コマンド全体のタイムアウトは `AGENT_BROWSER_COMMAND_TIMEOUT_MS`（既定 10000ms）です。
    - `agent-browser wait --load networkidle` 専用タイムアウトは `AGENT_BROWSER_WAIT_NETWORKIDLE_TIMEOUT_MS`（既定 3000ms）です。
    - 音声機能を使う場合は `ASR_*_URL` を設定。
-   - 録音の自動送信上限は `MIC_MAX_RECORDING_MS`（既定 20000ms）です。
+   - 録音の自動送信上限は `MIC_MAX_RECORDING_MS`（既定 35000ms）です。
    - TTS は切替可能です（既定: `TTS_BACKEND=http_audio`）。
      - `TTS_BACKEND=http_audio`（`TTS_ENDPOINT_URL` 経由で音声を返す）
      - `TTS_BACKEND=minimum_headroom_face_say`（MinimumHeadroom に発話テキストを送る）
@@ -191,6 +191,11 @@ npm run dev:all
   - それ以外は `ASR_MIXED_URL`
 - `ASR_SKIP_REDUNDANT_DECODE=true` の場合
   - fast 結果が未クリップかつ route model と同一なら再デコードを省略
+
+注記:
+
+- 現行UIの PTT（`Hold to Talk (EN/JA)` と `Ctrl/Alt`）は `languageHint` を常時付与するため、通常運用で「hint 未指定の自動判定」分岐はほぼ使いません。
+- hint 未指定時の判定は、fast 転写テキストの文字種比率ヒューリスティック（`asr-worker`）に依存します。運用条件によっては、特に日本語判定の精度が安定しない場合があります。
 
 既定モデル:
 

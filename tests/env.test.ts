@@ -12,7 +12,7 @@ describe("loadEnv", () => {
     expect(env.ARTICLE_REACHABILITY_TIMEOUT_MS).toBe(3000);
     expect(env.AGENT_BROWSER_COMMAND_TIMEOUT_MS).toBe(10000);
     expect(env.AGENT_BROWSER_WAIT_NETWORKIDLE_TIMEOUT_MS).toBe(3000);
-    expect(env.MIC_MAX_RECORDING_MS).toBe(20000);
+    expect(env.MIC_MAX_RECORDING_MS).toBe(35000);
     expect(env.ASR_SKIP_FAST_WHEN_HINTED).toBe(true);
     expect(env.ASR_SKIP_REDUNDANT_DECODE).toBe(true);
     expect(env.TTS_BACKEND).toBe("http_audio");

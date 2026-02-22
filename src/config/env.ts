@@ -61,7 +61,7 @@ const envSchema = z.object({
   ASR_LANGUAGE_THRESHOLD: z.coerce.number().min(0).max(1).default(0.75),
   ASR_SKIP_FAST_WHEN_HINTED: booleanWithDefaultFromEnv(true),
   ASR_SKIP_REDUNDANT_DECODE: booleanWithDefaultFromEnv(true),
-  MIC_MAX_RECORDING_MS: z.coerce.number().int().positive().default(20000),
+  MIC_MAX_RECORDING_MS: z.coerce.number().int().positive().default(35000),
   ASR_FAST_TIMEOUT_MS: z.coerce.number().int().positive().default(15000),
   ASR_DECODE_TIMEOUT_MS: z.coerce.number().int().positive().default(60000),
   TTS_BACKEND: z
