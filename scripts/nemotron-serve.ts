@@ -14,6 +14,7 @@ async function main(): Promise<void> {
   const host = process.env.NEMOTRON_HOST?.trim() || "127.0.0.1";
   const port = process.env.NEMOTRON_PORT?.trim() || "8000";
   const maxModelLen = process.env.NEMOTRON_MAX_MODEL_LEN?.trim() || "2048";
+  const parallel = process.env.NEMOTRON_MAX_NUM_SEQS?.trim() || "1";
   const nGpuLayers = process.env.NEMOTRON_N_GPU_LAYERS?.trim() || "-1";
   const threads = process.env.NEMOTRON_THREADS?.trim();
 
@@ -28,6 +29,8 @@ async function main(): Promise<void> {
     port,
     "--ctx-size",
     maxModelLen,
+    "--parallel",
+    parallel,
     "--n-gpu-layers",
     nGpuLayers
   ];
@@ -41,6 +44,7 @@ async function main(): Promise<void> {
   console.log(`  model: ${model}`);
   console.log(`  alias: ${servedModelName}`);
   console.log(`  endpoint: http://${host}:${port}/v1`);
+  console.log(`  parallel: ${parallel}`);
   console.log(`  n-gpu-layers: ${nGpuLayers}`);
   if (threads) {
     console.log(`  threads: ${threads}`);

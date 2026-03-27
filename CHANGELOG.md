@@ -2,6 +2,22 @@
 
 このファイルでは、主要な変更点をバージョンごとに記録します。
 
+## v1.0.3 - 2026-03-27
+
+### Changed
+
+- ローカル Nemotron の既定運用例を `nvidia_Nemotron-Cascade-2-30B-A3B-Q4_K_L.gguf` 前提へ更新。
+- `scripts/nemotron-serve.ts` で `NEMOTRON_MAX_NUM_SEQS` を `llama-server --parallel` に反映するように変更。
+- 単独利用前提の推奨値として、ローカル `llama.cpp` 構成を `--parallel 1` / `--ctx-size 12288` に整理。
+
+### Docs
+
+- README のローカル Nemotron 例、Hugging Face 配布元、運用メモを現行の Cascade モデル構成に合わせて更新。
+
+### Notes
+
+- このリリースのタグ: `v1.0.3`
+
 ## v1.0.2 - 2026-02-22
 
 ### Added

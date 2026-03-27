@@ -136,18 +136,20 @@
 
 llama-server \\
   --model /absolute/path/to/model.gguf \\
-  --alias nemotron-3-nano \\
+  --alias nemotron-cascade-2-30b \\
   --host 127.0.0.1 \\
   --port 8000 \\
-  --ctx-size 8192 \\
+  --ctx-size 12288 \\
+  --parallel 1 \\
   --n-gpu-layers -1
 
 補足:
 
 - llama.cpp では GGUF 形式モデルが必要です（HF safetensors はそのままでは使えません）。
-- 検証で使用したモデル例: `https://huggingface.co/unsloth/Nemotron-3-Nano-30B-A3B-GGUF` の `Nemotron-3-Nano-30B-A3B-UD-Q4_K_XL.gguf`
+- 現在のローカル設定例: `https://huggingface.co/bartowski/nvidia_Nemotron-Cascade-2-30B-A3B-GGUF` の `nvidia_Nemotron-Cascade-2-30B-A3B-Q4_K_L.gguf`
+- `NEMOTRON_MAX_NUM_SEQS` は `llama-server --parallel` に対応します。単独利用なら `1` が自然です。
 - VRAMが厳しい場合は `NEMOTRON_N_GPU_LAYERS` を減らして調整してください。
-- 32GB VRAM では `--ctx-size 8192` 付近から開始し、安定する範囲で段階的に増やすのが実用的です。
+- 32GB VRAM では `--ctx-size 12288` / `--parallel 1` で実運用可能でした。長い文脈や同時利用を増やす場合は、必要に応じて `8192` 付近へ戻してください。
 - `--ctx-size 65536` は KV cache が大きくなり、32GB VRAM では OOM になりやすいです。
 
 ## 起動
