@@ -42,7 +42,7 @@ def create_app() -> FastAPI:
     engine = KokoroEngine(model_paths=model_paths, default_voice=settings.default_voice)
     lock = threading.Lock()
 
-    app = FastAPI(title="english-trainer-tts-worker", version="0.1.0")
+    app = FastAPI(title="english-trainer-tts-worker", version="1.0.3")
 
     @app.get("/health")
     def health() -> dict[str, Any]:
@@ -111,4 +111,3 @@ def detect_primary_language(text: str, fallback: Language) -> Language:
     if ascii_chars == non_ascii_chars:
         return fallback
     return "en" if ascii_chars > non_ascii_chars else "ja"
-
