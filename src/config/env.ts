@@ -49,7 +49,7 @@ const envSchema = z.object({
   NEMOTRON_API_KEY: z.string().optional(),
   NEMOTRON_BASE_URL: z.string().url().default("http://127.0.0.1:8000/v1"),
   NEMOTRON_MODEL_ID: z.string().default("nemotron-3-nano"),
-  GEMINI_MODEL_ID: z.string().optional(),
+  AGY_MODEL_ID: z.string().trim().min(1).default("gemini-4-hydrogen-low"),
   ASR_FAST_URL: optionalUrlFromEnv,
   ASR_JA_URL: optionalUrlFromEnv,
   ASR_EN_URL: optionalUrlFromEnv,

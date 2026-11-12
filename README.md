@@ -39,8 +39,7 @@
   - （ソースからビルドする場合）`cmake` + C/C++ ビルドツールチェーン
 - （自動記事抽出を使う場合）`agent-browser` CLI
 - （`npm run article:auth` を使う場合）headedブラウザを開ける GUI 環境
-- （`gemini` プロバイダーを使う場合）`gemini` CLI（インストール済みかつ Google アカウントでログイン済み）
-  - `gemini /settings` で `Preview Features` を `true` に設定済みであること
+- （`gemini` プロバイダーを使う場合）Antigravity CLI (`agy`)（インストール済みかつ認証済み）
 - （音声機能を使う場合）Parakeet ASR エンドポイント
 - TTS は以下のどちらか
   - MinimumHeadroom (`face_say`)
@@ -87,8 +86,8 @@
    - 既定は llama.cpp 経由のローカル Nemotron（`NEMOTRON_RUNTIME=local_llama_cpp`）
    - `NEMOTRON_RUNTIME=remote_api` の場合のみ `NEMOTRON_API_KEY` が必要
    - `NEMOTRON_GGUF_PATH` はローカルGGUFモデルを指定
-   - `gemini` プロバイダーを使う場合は `gemini -p` のアカウント認証を利用（APIキー不要）
-   - `GEMINI_MODEL_ID` 既定は `gemini-3-flash-preview`。
+   - `gemini` プロバイダーを使う場合は `agy` のアカウント認証を利用
+   - `AGY_MODEL_ID` 既定は `gemini-4-hydrogen-low`。旧 `GEMINI_MODEL_ID` は使いません。
    - 読み込み不可URLの早期判定は `ARTICLE_REACHABILITY_TIMEOUT_MS`（既定 3000ms）で調整できます。
    - `agent-browser` コマンド全体のタイムアウトは `AGENT_BROWSER_COMMAND_TIMEOUT_MS`（既定 10000ms）です。
    - `agent-browser wait --load networkidle` 専用タイムアウトは `AGENT_BROWSER_WAIT_NETWORKIDLE_TIMEOUT_MS`（既定 3000ms）です。
@@ -101,11 +100,13 @@
    - `tts-worker` のモデルは `TTS_KOKORO_MODEL_PATH` / `TTS_KOKORO_VOICES_PATH` で明示指定できます。
      未指定時は `./assets/kokoro/*` と `../minimum-headroom/assets/kokoro/*` を自動探索します。
 
-4. （`gemini` プロバイダーを使う場合）Gemini CLI の前提状態を確認します（初回のみ）。
-   - `gemini` コマンドが無い場合は、Gemini CLI を先にインストール
-   - `gemini /settings` を開き、`Preview Features` を `true` に設定
-   - `gemini --version` で CLI がインストール済みであることを確認
-   - `gemini -p "Reply with exactly: OK" --output-format text` が成功することを確認（ログイン済み確認）
+4. （`gemini` プロバイダーを使う場合）Antigravity CLI の前提状態を確認します。
+   - `agy` をPATH上に用意し、別の端末で認証を完了してください。
+   - `agy models` に `gemini-4-hydrogen-low` があることを確認してください。
+   - API・保存データ互換のためプロバイダーIDは `gemini` のままですが、旧Gemini CLIは呼び出しません。
+   - 既定のNemotronは変わりません。Gemini選択時のみ記事・会話内容をagyへ渡します。
+   - 一時作業ディレクトリ、sandbox、タイムアウトを使用し、権限の自動承認は指定しません。
+     sandboxはツール完全無効化を意味しません。ツール不要の文章生成として指示します。
 
 5. （任意）認証が必要なサイト向けに auth state を作成します（headed mode）。
    - `agent-browser --headed` でブラウザを開くため、GUI が使える環境で実行してください。

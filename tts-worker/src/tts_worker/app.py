@@ -42,7 +42,7 @@ def create_app() -> FastAPI:
     engine = KokoroEngine(model_paths=model_paths, default_voice=settings.default_voice)
     lock = threading.Lock()
 
-    app = FastAPI(title="english-trainer-tts-worker", version="1.0.4")
+    app = FastAPI(title="english-trainer-tts-worker", version="1.0.5")
 
     @app.get("/health")
     def health() -> dict[str, Any]:

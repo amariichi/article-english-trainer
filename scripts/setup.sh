@@ -93,7 +93,7 @@ fi
 
 warn_missing_cmd "ffmpeg" "needed for webm/ogg/mp4 ASR decode fallback"
 warn_missing_cmd "agent-browser" "needed for automatic URL article extraction"
-warn_missing_cmd "gemini" "needed when using Gemini provider via gemini -p"
+warn_missing_cmd "agy" "needed when using Gemini provider via Antigravity CLI"
 warn_missing_cmd "nvidia-smi" "needed for local GPU diagnostics"
 
 if [ "$skip_env" = false ]; then

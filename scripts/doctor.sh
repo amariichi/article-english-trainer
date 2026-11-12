@@ -111,7 +111,7 @@ fi
 
 check_optional_cmd "ffmpeg" "ASR fallback decode for webm/ogg/mp4"
 check_optional_cmd "agent-browser" "automatic URL article extraction"
-check_optional_cmd "gemini" "Gemini provider via gemini -p"
+check_optional_cmd "agy" "Gemini provider via Antigravity CLI"
 check_optional_cmd "nvidia-smi" "GPU diagnostics / local Nemotron"
 
 if command -v llama-server >/dev/null 2>&1; then
