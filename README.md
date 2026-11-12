@@ -28,7 +28,7 @@
 ## 動作要件
 
 - `bash`（`scripts/setup.sh` / `scripts/doctor.sh` 実行用）
-- Node.js 20+
+- Node.js 22.23.5+ / 24.22.3+ / 26.13.1+（各系列内。24系を推奨）
 - `npm`
 - `uv`（`asr-worker` / `tts-worker` 用）
 - Python 3.10+（`asr-worker` 用）
@@ -248,7 +248,7 @@ npm test
 - `.github/workflows/ci.yml` で CI を実行します。
 - トリガー: `main` への push、`main` 向け PR、手動実行 (`workflow_dispatch`)
 - 実行内容:
-  - Nodeジョブ（Node 20 / 22）: `npm ci` -> `npm run lint` -> `npm test` -> `npm run build`
+  - Nodeジョブ（Node 22.23.5 / 24.22.3 / 26.13.1）: `npm ci` -> `npm run lint` -> `npm test` -> `npm run build`
   - ASR workerジョブ: `uv sync --project asr-worker --locked` -> Python compile check
 
 ローカルでの近似再現:
