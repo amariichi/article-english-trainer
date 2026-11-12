@@ -16,7 +16,7 @@
     "start": "node dist/src/server.js",
     "lint": "eslint \"src/**/*.ts\" \"scripts/**/*.ts\" \"tests/**/*.ts\" --max-warnings=0",
     "lint:fix": "npm run lint -- --fix",
-    "test": "vitest run",
+    "test": "node --test scripts/node-version-boundaries.mjs && vitest run",
     "test:watch": "vitest",
     "article:auth": "tsx scripts/article-auth.ts",
     "nemotron:serve": "tsx scripts/nemotron-serve.ts",
@@ -24,10 +24,29 @@
     "asr-worker:start": "tsx scripts/asr-worker-start.ts",
     "asr-worker:smoke": "uv run --project asr-worker asr-worker --smoke",
     "tts-worker:start": "tsx scripts/tts-worker-start.ts",
-    "tts-worker:smoke": "uv run --project tts-worker tts-worker --smoke"
+    "tts-worker:smoke": "uv run --project tts-worker tts-worker --smoke",
+    "preinstall": "node scripts/check-node-version.mjs",
+    "predev": "node scripts/check-node-version.mjs",
+    "predev:all": "node scripts/check-node-version.mjs",
+    "predev:watch": "node scripts/check-node-version.mjs",
+    "prebuild": "node scripts/check-node-version.mjs",
+    "prestart": "node scripts/check-node-version.mjs",
+    "pretest": "node scripts/check-node-version.mjs",
+    "presetup": "node scripts/check-node-version.mjs",
+    "presetup:ci": "node scripts/check-node-version.mjs",
+    "presetup:doctor": "node scripts/check-node-version.mjs",
+    "prelint": "node scripts/check-node-version.mjs",
+    "prelint:fix": "node scripts/check-node-version.mjs",
+    "prearticle:auth": "node scripts/check-node-version.mjs",
+    "prenemotron:serve": "node scripts/check-node-version.mjs",
+    "prenemotron:preflight": "node scripts/check-node-version.mjs",
+    "preasr-worker:start": "node scripts/check-node-version.mjs",
+    "preasr-worker:smoke": "node scripts/check-node-version.mjs",
+    "pretts-worker:start": "node scripts/check-node-version.mjs",
+    "pretts-worker:smoke": "node scripts/check-node-version.mjs"
   },
   "engines": {
-    "node": ">=20"
+    "node": "^22.23.5 || ^24.22.3 || ^26.13.1"
   },
   "dependencies": {
     "dotenv": "^16.6.1",

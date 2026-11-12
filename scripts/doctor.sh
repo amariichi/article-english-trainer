@@ -64,11 +64,10 @@ check_required_cmd "npm"
 check_required_cmd "uv"
 
 if command -v node >/dev/null 2>&1; then
-  node_major="$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo "0")"
-  if [ "$node_major" -ge 20 ]; then
-    ok "Node.js major version is $node_major (>=20)"
+  if node scripts/check-node-version.mjs; then
+    ok "Node.js meets the patched supported-release requirement"
   else
-    fail "Node.js major version is $node_major (<20). Upgrade Node.js."
+    fail "Upgrade Node.js to 22.23.5+, 24.22.3+, or 26.13.1+ within those release lines."
   fi
 fi
 
